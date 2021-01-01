@@ -1494,6 +1494,109 @@ finalize()只调用一次
 
 ![image-20201227212053248](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201227212053248.png)
 
+# 29-2垃圾回收器
+
+## jdk8使用Parallel Scavenge + Parallel Old
+
+具体参考https://www.cnblogs.com/chenpt/p/9803298.html
+
+## 分类
+
+```
+##按照线程数分 ： 串行垃圾回收器，并行垃圾回收器(多个垃圾回收器同时操作)
+##按照工作模式分： 并发式垃圾回收器（允许垃圾回收线程和应用线程交替工作） ，独占式垃圾回收器(停止全部应用线程)
+##按碎片处理分：压缩式垃圾回收器(对存活对象进行压缩处理，消除回收后的碎片，使用指针碰撞再分配对象空间)
+             非压缩式垃圾回收器(再分配对象空间时，使用空闲列表来分)
+##按工作内存空间分：年轻代垃圾回收器 ，老年代垃圾回收器
+
+```
+
+## 评价GC的性能指标
+
+![image-20201230193438934](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201230193438934.png)
+
+![image-20201230194252375](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201230194252375.png)
+
+## 7款经典的垃圾回收器以及与分代的关系
+
+![image-20201230194939501](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201230194939501.png)
+
+![image-20201230195303038](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201230195303038.png)
+
+## 垃圾回收器的组合关系
+
+![image-20201230195625857](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201230195625857.png)
+
+## Serial回收器(串行回收)
+
+```
+serial在新生代使用，复制算法、串行回收、STW
+Serial old在老年代使用，标记整理算法、串行回收、STW
+
+优点：专心做垃圾回收，没有线程的切换，垃圾回收时比较高效
+```
+
+## ParNew回收器
+
+```
+ParNew收集器其实就是Serial收集器的多线程版本。
+
+除了使用多线程外其余行为均和Serial收集器一模一样（参数控制、收集算法、Stop The World、对象分配规则、回收策略等）
+```
+
+## Parallel Scavenge 回收器(吞吐量优先)
+
+```
+与吞吐量关系密切，故也称为吞吐量优先收集器。
+
+特点：属于新生代收集器也是采用复制算法的收集器，又是并行的多线程收集器（与ParNew收集器类似）。
+
+该收集器的目标是达到一个可控制的吞吐量。还有一个值得关注的点是：GC自适应调节策略（与ParNew收集器最重要的一个区别）
+```
+
+## Parallel Old 回收器
+
+```
+是Parallel Scavenge收集器的老年代版本。
+
+特点：多线程，采用标记-整理算法。
+
+应用场景：注重高吞吐量以及CPU资源敏感的场合，都可以优先考虑Parallel Scavenge+Parallel Old 收集器。
+```
+
+## CMS回收器(concurrent-mark-sweep停顿时间优先)
+
+```
+一种以获取最短回收停顿时间为目标的收集器。
+
+特点：基于标记-清除算法实现。并发收集、低停顿。
+
+应用场景：适用于注重服务的响应速度，希望系统停顿时间最短，给用户带来更好的体验等场景下。如web程序、b/s服务。
+
+缺点：
+- 对CPU资源非常敏感。
+
+- 无法处理浮动垃圾，可能出现Concurrent Model Failure失败而导致另一次Full GC的产生。
+
+- 因为采用标记-清除算法所以会存在空间碎片的问题，导致大对象无法分配空间，不得不提前触发一次Full GC。
+
+
+#########
+  重新标记阶段是为了确定之前标记的垃圾是否确实是垃圾对象
+  浮动垃圾是在并发标记阶段，之前不是垃圾，突然变成垃圾，后面就无法被cms处理
+
+```
+
+![image-20201230205606335](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201230205606335.png)
+
+###  为什么不将整理算法改为标记-整理算法
+
+```
+因为cms回收器使用的时候，用户线程与垃圾回收线程是并发清除的，整理碎片的话需要改变内存地址，所以会对运行的资源产生影响。
+```
+
+## G1回收器
+
 # 30.线程池
 
 https://www.bilibili.com/video/BV16J411h7Rd?p=206
