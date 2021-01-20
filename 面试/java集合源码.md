@@ -404,7 +404,7 @@ private static int roundUpToPowerOf2(int number) {
 ```
 
 ```
-
+找到小于等于该数的最小的二次幂数
 public static int highestOneBit(int i) {
         // HD, Figure 3-1
         
@@ -414,6 +414,8 @@ public static int highestOneBit(int i) {
         i |= (i >>  4);
         i |= (i >>  8);
         i |= (i >> 16);
+        
+       
         
         // 比如一个数是10 上面五个步骤的结果就是 i=0000 1111 
         
@@ -426,7 +428,7 @@ public static int highestOneBit(int i) {
 
 ```
  void addEntry(int hash, K key, V value, int bucketIndex) {
-   //当size大于等于阈值，并且当前数组位置上并没有节点是，我们进行扩容操作
+   //当size大于等于阈值，并且当前数组位置上是有节点的，我们进行扩容操作
         if ((size >= threshold) && (null != table[bucketIndex])) {
             resize(2 * table.length);   /、扩容两倍
             hash = (null != key) ? hash(key) : 0;

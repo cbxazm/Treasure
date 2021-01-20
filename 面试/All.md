@@ -168,10 +168,14 @@ https://blog.csdn.net/wx960421/article/details/88697996
 
 # 管程
 
+https://www.cnblogs.com/kkkkkk/p/5543799.html
+
 ```
 就是更方便的实现进程互斥和同步，之前都是使用信号量 P V操作
 
 类似于java中synchronized关键字的使用方法
+
+可以理解为之前的pv操作是类似于面向过程，管程实现了封装，类似于面向对象
 ```
 
 ![image-20201223144823325](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201223144823325.png)
@@ -768,7 +772,7 @@ hash冲突：如果通过hash算法之后算出两个相同的hash值，就会�
 
 2. 散列表是懒加载机制，只有第一次put的时候才创建，执行无参的构造函数时，只是指定了加载因子为0.75f,只有当put的时候才会通过resize()方法去初始化数组
 
-3. 链表转红黑树有两个指标： 1.链表长度达到了8 2.当前散列表的数组容量已经达到64  必须连个都满足，不然不会转换为红黑树，只是会发生一次resize
+3. 链表转红黑树有两个指标:1.链表长度达到了8 2.当前散列表的数组容量已经达到64  必须连个都满足，不然不会转换为红黑树，只是会发生一次resize
 
 4. Node中的hash值是我们存放元素的key.hashcode嘛？
  不是，是key.hashcode二次加工的得到的，通过hash(key)方法，传入hashcode,让它高16位异或上低16位得到，
@@ -1387,7 +1391,7 @@ https://blog.csdn.net/luzhensmart/article/details/81431212
 2.可达性分析算法(java使用) 也叫跟搜索算法，追踪性垃圾收集
 为了解决循环依赖问题，在Java中采取了 可达性分析法。该方法的基本思想是通过一系列的“GC Roots”对象作为起点进行搜索，如果在“GC Roots”和一个对象之间没有可达路径，则称该对象是不可达的，不过要注意的是被判定为不可达的对象不一定就会成为可回收对象。被判定为不可达的对象要成为可回收对象必须至少经历两次标记过程，如果在这两次标记过程中仍然没有逃脱成为可回收对象的可能性，则基本上就真的成为可回收对象了。
 
-在Java语言中，可作为GC Roots的对象包含以下几种：
+在Java语言中，可作为GC Roots的对象包含以下几种：(GCRoots一般选择堆外的对象，因为回收)
 
 1.虚拟机栈(栈帧中的本地变量表)中引用的对象。(可以理解为:引用栈帧中的本地变量表的所有对象)
 2.方法区中静态属性引用的对象(可以理解为:引用方法区该静态属性的所有对象)
@@ -1552,6 +1556,12 @@ ParNew收集器其实就是Serial收集器的多线程版本。
 特点：属于新生代收集器也是采用复制算法的收集器，又是并行的多线程收集器（与ParNew收集器类似）。
 
 该收集器的目标是达到一个可控制的吞吐量。还有一个值得关注的点是：GC自适应调节策略（与ParNew收集器最重要的一个区别）
+
+Parallel Scavenge收集器使用两个参数控制吞吐量：
+
+XX:MaxGCPauseMillis 控制最大的垃圾收集停顿时间
+
+XX:GCRatio 直接设置吞吐量的大小
 ```
 
 ## Parallel Old 回收器
@@ -1595,7 +1605,53 @@ ParNew收集器其实就是Serial收集器的多线程版本。
 因为cms回收器使用的时候，用户线程与垃圾回收线程是并发清除的，整理碎片的话需要改变内存地址，所以会对运行的资源产生影响。
 ```
 
-## G1回收器
+## G1回收器（jdk9之后默认的垃圾回收器）
+
+https://www.jianshu.com/p/0f1f5adffdc1
+
+### 特点
+
+![image-20210101211520869](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101211520869.png)
+
+![image-20210101212700746](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101212700746.png)
+
+![image-20210101212840362](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101212840362.png)
+
+### region介绍
+
+![image-20210101213557973](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101213557973.png)
+
+![image-20210101213727029](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101213727029.png)
+
+### Remember set
+
+![image-20210101214934752](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101214934752.png)
+
+### 回收过程
+
+```
+每个环节都年轻代的回收
+```
+
+![image-20210101220127159](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101220127159.png)
+
+**1.young gc**
+
+![image-20210101215225278](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101215225278.png)
+
+![image-20210101215553287](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101215553287.png)
+
+**2.并发标记环节**
+
+![image-20210101215904791](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101215904791.png)
+
+**3.混合回收**
+
+![image-20210101220001565](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101220001565.png)
+
+**4.可能会触发full gc**
+
+![image-20210101220055956](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20210101220055956.png)
 
 # 30.线程池
 
@@ -1655,18 +1711,21 @@ Fork的作用是复制一个与当前进程一样的进程。新进程的所有�
 
 触发的四个时机：
   1 在指定的时间间隔内，执行指定次数的写操作
+  
   2 执行save（阻塞， 只管保存快照，其他的等待） 或者是bgsave （异步）命令
     ##save 跟 bgsave的区别 
        save只管保存，不管其他，全部阻塞。
        bgsave会让redis在后台异步进行操作，快照同时还可以响应客户端请求
+       
   3 执行flushall 命令，清空数据库所有数据，意义不大。
+  
   4 执行shutdown 命令，保证服务器正常关闭且不丢失任何数据，意义...也不大。
   
 如何恢复：
  将dump.rdb文件赋值到redis的安装目录下并启动服务即可
 如何修复：
   redis-check-dump  --fix  xxrdb文件
- 2据完整性和一致性要求不高
+ 数据完整性和一致性要求不高
 ##劣势：意外宕机，会丢失最后一次快照后所有的修改，
        fork的时候，内存中的数据被克隆了一份，如果原数据很大的话就很浪费性能
 ```
@@ -1690,9 +1749,11 @@ AppendFsync + 策略
   2.Everysec:每秒记录，如果一秒内宕机，丢失一秒内的数据
   3.no
   
+  
 重写ReWrite机制：
 
 AOF采用文件追加的方式，文件会越来越大，为避免这种状况，新增了重写机制，当AOF文件的大小超过所设定的阈值时，Redis会启动AOF文件的内容压缩。只会保留可以恢复数据的最小指令集，可以使用命令bgrewriteaof
+
 
 触发机制：
 redis会记录上次重写时AOF大小，默认配置是当AOF文件大小是上次rewrite后大小的一倍且文件大小大于64Mb后触发。

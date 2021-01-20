@@ -131,3 +131,25 @@ https://www.zhihu.com/question/20596402?sort=created
 ![](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201210194727239.png)
 
 ![image-20201210194913969](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20201210194913969.png)
+
+# 锁
+
+https://blog.csdn.net/bruceleenumberone/article/details/81865045
+
+innodb中无索行锁升级为表锁的情况
+
+```
+select * from XX where name =900  如果name是varchar类型的，并且是索引，这样就会出现索引失效情况，行锁就会升级为表锁
+```
+
+
+
+间隙锁定义
+
+```
+当我们用范围条件，而不是使用相等条件检索数据，并请求共享或排它锁时，innodb会给符合条件的已有数据进行加锁，对于在范围内但是不存在的数据，就是间隙，innodb也会对这个间隙进行加锁，这种锁机制就叫做间隙锁。
+
+
+后续如果对间隙数据进行操作，也是不行的，会阻塞。
+```
+
